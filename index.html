@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ece9fb;--bg2:#ddd7f7;--surface:#fff;--ink:#1d1640;--muted:#5f5a85;--line:#cbc3ee;
+  --a1:#6a3df0;--a2:#e0147f;--a1-ink:#fff;--glow:none;
+  --good:#0a8a5a;--mid:#a35f00;--low:#c4123a;
+  --head:'Chakra Petch','Trebuchet MS',system-ui,sans-serif;
+  --body:'Exo 2',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0a0720;--bg2:#150f3a;--surface:#13103a;--ink:#eef0ff;--muted:#9a9ccf;--line:#32297a;--a1:#19e3ff;--a2:#ff3ea5;--a1-ink:#04121a;--glow:0 0 14px rgba(25,227,255,.35);--good:#3dffa8;--mid:#ffc94d;--low:#ff5f7e;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#0a0720;--bg2:#150f3a;--surface:#13103a;--ink:#eef0ff;--muted:#9a9ccf;--line:#32297a;--a1:#19e3ff;--a2:#ff3ea5;--a1-ink:#04121a;--glow:0 0 14px rgba(25,227,255,.35);--good:#3dffa8;--mid:#ffc94d;--low:#ff5f7e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:radial-gradient(1200px 500px at 80% -10%,var(--bg2),transparent),var(--bg);background-color:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;min-height:100vh}
+main{max-width:1080px;margin:0 auto;padding:22px 16px 60px}
+.cut{clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+.hud{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:20px}
+.title h1{font-family:var(--head);font-weight:700;font-size:clamp(1.8rem,5vw,2.8rem);line-height:1;margin:0;letter-spacing:.01em}
+.title h1 span{color:var(--a1)}
+.title p{margin:6px 0 0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{padding:12px 14px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line),var(--glow);border-left:4px solid var(--a1)}
+.stat:nth-child(even){border-left-color:var(--a2)}
+.stat b{display:block;font-family:var(--head);font-size:1.6rem;line-height:1.1;overflow-wrap:anywhere}
+.stat span{color:var(--muted);font-size:.85rem}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+input,select,button{font:inherit;color:var(--ink)}
+input,select{background:var(--surface);border:1.5px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--a2);outline-offset:2px}
+.bar input[type=search]{flex:1 1 220px}
+button{cursor:pointer;border:1.5px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 16px;font-weight:700;font-family:var(--head)}
+button.primary{background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--a1-ink);border-color:transparent;box-shadow:var(--glow)}
+.squads{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.squads button{padding:6px 14px;font-size:.9rem;border-radius:999px}
+.squads button[aria-pressed="true"]{background:var(--a1);color:var(--a1-ink);border-color:var(--a1)}
+.tabs{display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--line)}
+.tabs button{border:0;background:none;border-radius:0;padding:10px 20px;color:var(--muted);margin-bottom:-2px;border-bottom:3px solid transparent}
+.tabs button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--a2)}
+.panel{background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line),var(--glow);padding:20px;margin-bottom:20px}
+.panel[hidden]{display:none}
+.panel h2{font-family:var(--head);margin:0 0 14px;font-size:1.3rem}
+.panel h3{margin:16px 0 8px;font-size:.95rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.grid.sm{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;color:var(--muted);font-weight:600}
+label input{color:var(--ink);font-weight:400}
+.actions{display:flex;gap:10px;margin-top:14px}
+.err{color:var(--low);margin:10px 0 0;min-height:1.2em;font-size:.9rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{position:relative;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);padding:16px 16px 14px;display:flex;flex-direction:column;gap:11px}
+.card.top3{box-shadow:inset 0 0 0 2px var(--a2),var(--glow)}
+.rank{position:absolute;top:0;right:22px;background:var(--a2);color:#fff;font-family:var(--head);font-weight:700;padding:2px 10px;font-size:.9rem}
+.card-top{display:flex;gap:12px;align-items:center}
+.avatar{flex:none;width:50px;height:50px;display:grid;place-items:center;font-family:var(--head);font-weight:700;font-size:1.15rem;background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--a1-ink)}
+.card h3{margin:0;font-family:var(--head);font-size:1.12rem;line-height:1.2;padding-right:44px}
+.card small{color:var(--muted);display:block;overflow-wrap:anywhere}
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);border-radius:4px;padding:0 8px;font-size:.82rem;font-weight:600}
+.chip.pass{color:var(--good);border-color:var(--good)}.chip.fail{color:var(--low);border-color:var(--low)}
+.xp{display:flex;flex-direction:column;gap:4px}
+.xp-row{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);font-weight:600}
+.xp-row b{color:var(--ink);font-family:var(--head)}
+.meter{height:10px;background:var(--bg2);box-shadow:inset 0 0 0 1px var(--line)}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--a1),var(--a2))}
+.g-good{color:var(--good)}.g-mid{color:var(--mid)}.g-low{color:var(--low)}
+.card-actions{display:flex;gap:8px}
+.card-actions button{padding:5px 14px;font-size:.88rem}
+.card-actions .del:hover{color:var(--low);border-color:var(--low)}
+.wrap{overflow-x:auto;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line)}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--head);color:var(--muted);font-size:.9rem}
+td.n{font-family:var(--head);font-weight:700}
+tr.first td{background:linear-gradient(90deg,rgba(224,20,127,.12),transparent)}
+.empty{padding:40px 18px;text-align:center;color:var(--muted);border:1.5px dashed var(--line)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.meter i{transition:width .5s ease-out}.panel{animation:in .18s ease-out}@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hud">
+    <div class="title">
+      <h1>Student <span>manager</span></h1>
+      <p>Records are saved in this browser.</p>
+    </div>
+    <div class="stats" aria-live="polite">
+      <div class="stat cut"><b id="sCount">0</b><span>students</span></div>
+      <div class="stat cut"><b id="sAvg">–</b><span>average percentage</span></div>
+      <div class="stat cut"><b id="sPass">–</b><span>passed</span></div>
+      <div class="stat cut"><b id="sFail">–</b><span>failed</span></div>
+      <div class="stat cut"><b id="sTop" style="font-size:1.2rem">–</b><span>top student</span></div>
+    </div>
+  </header>
+
+  <div class="bar">
+    <input type="search" id="q" placeholder="Search by roll number or name" aria-label="Search students by roll number or name">
+    <select id="sortSel" aria-label="Sort students">
+      <option value="pct">Sort by percentage</option>
+      <option value="name">Sort by name</option>
+      <option value="roll">Sort by roll number</option>
+      <option value="cls">Sort by class</option>
+    </select>
+    <button class="primary cut" id="addBtn" type="button">Add student</button>
+  </div>
+  <div class="squads" id="nav" role="group" aria-label="Filter by class"></div>
+  <div class="tabs" role="group" aria-label="View">
+    <button type="button" data-view="cards" aria-pressed="true">All students</button>
+    <button type="button" data-view="results" aria-pressed="false">Results</button>
+  </div>
+
+  <section class="panel cut" id="panel" hidden>
+    <h2 id="pTitle">New student</h2>
+    <form id="form" novalidate>
+      <div class="grid">
+        <label>Full name<input id="fName" required maxlength="80" autocomplete="off"></label>
+        <label>Roll number<input id="fRoll" required maxlength="20" autocomplete="off"></label>
+        <label>Class<input id="fCls" required maxlength="20" placeholder="e.g. 10-A" autocomplete="off"></label>
+        <label>Email<input id="fMail" type="email" maxlength="100" autocomplete="off"></label>
+      </div>
+      <h3>Marks out of 100 in each subject</h3>
+      <div class="grid sm" id="subjInputs"></div>
+      <p class="err" id="err" role="alert"></p>
+      <div class="actions">
+        <button class="primary" type="submit" id="saveBtn">Save student</button>
+        <button type="button" id="cancelBtn">Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <div class="cards" id="cards"></div>
+  <div class="wrap cut" id="resWrap" hidden>
+    <table>
+      <thead><tr><th>Rank</th><th>Roll no.</th><th>Name</th><th>Class</th><th>Total (out of 500)</th><th>Percentage</th><th>Grade</th><th>Result</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty" hidden></div>
+</main>
+
+<script>
+(function(){
+  var KEY='student-manager-v2', SUBJ=['Maths','Science','English','Hindi','Social studies'], PASS=35;
+  var students=[], editing=null, cls='', view='cards';
+  var $=function(i){return document.getElementById(i)};
+
+  function load(){
+    try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(Array.isArray(p))return p}}catch(e){}
+    return [
+      {uid:1,name:'Aarav Deshmukh',roll:'101',cls:'10-A',email:'aarav@example.com',m:[88,92,85,79,90]},
+      {uid:2,name:'Meera Joshi',roll:'102',cls:'10-A',email:'meera@example.com',m:[96,94,91,89,97]},
+      {uid:3,name:'Rohan Patil',roll:'103',cls:'10-B',email:'',m:[67,58,72,64,70]},
+      {uid:4,name:'Sana Sheikh',roll:'104',cls:'10-B',email:'sana@example.com',m:[52,30,61,48,55]}
+    ];
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(students))}catch(e){}}
+  function calc(s){
+    var total=s.m.reduce(function(a,b){return a+b},0), pct=total/(SUBJ.length*100)*100;
+    var pass=s.m.every(function(x){return x>=PASS});
+    var g=!pass?['F','low']:pct>=90?['A+','good']:pct>=80?['A','good']:pct>=70?['B','good']:pct>=60?['C','mid']:['D','mid'];
+    return {total:total,pct:pct,pass:pass,grade:g[0],tone:g[1],level:Math.floor(pct/10)};
+  }
+  function esc(x){return String(x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function initials(n){return n.split(/\s+/).slice(0,2).map(function(w){return w.charAt(0)}).join('').toUpperCase()}
+
+  function render(){
+    var q=$('q').value.trim().toLowerCase(), k=$('sortSel').value;
+    var ranked=students.slice().sort(function(a,b){return calc(b).pct-calc(a).pct}), rank={};
+    ranked.forEach(function(s,i){rank[s.uid]=i+1});
+    var classes=Array.from(new Set(students.map(function(s){return s.cls}))).sort();
+    if(cls&&classes.indexOf(cls)<0)cls='';
+    $('nav').innerHTML='<button type="button" data-cls="" aria-pressed="'+(cls===''?'true':'false')+'">All classes ('+students.length+')</button>'+
+      classes.map(function(c){var n=students.filter(function(s){return s.cls===c}).length;
+        return '<button type="button" data-cls="'+esc(c)+'" aria-pressed="'+(cls===c?'true':'false')+'">'+esc(c)+' ('+n+')</button>'}).join('');
+    var list=students.filter(function(s){
+      return (!cls||s.cls===cls)&&(!q||(s.roll+' '+s.name+' '+s.cls).toLowerCase().indexOf(q)>-1);
+    }).sort(function(a,b){
+      if(k==='pct')return calc(b).pct-calc(a).pct;
+      return String(a[k]).localeCompare(String(b[k]),undefined,{numeric:true});
+    });
+    $('cards').hidden=view!=='cards'||!list.length;
+    $('resWrap').hidden=view!=='results'||!list.length;
+    $('cards').innerHTML=list.map(function(s){
+      var c=calc(s), r=rank[s.uid];
+      return '<article class="card cut'+(r<=3?' top3':'')+'"><span class="rank" title="Rank in the whole school list">#'+r+'</span>'+
+        '<div class="card-top"><div class="avatar cut" aria-hidden="true">'+esc(initials(s.name))+'</div><div><h3>'+esc(s.name)+'</h3>'+(s.email?'<small>'+esc(s.email)+'</small>':'')+'</div></div>'+
+        '<div class="meta"><span class="chip">Roll '+esc(s.roll)+'</span><span class="chip">Class '+esc(s.cls)+'</span><span class="chip '+(c.pass?'pass':'fail')+'">'+(c.pass?'Pass':'Fail')+'</span></div>'+
+        '<div class="xp"><div class="xp-row"><span>Level <b>'+c.level+'</b></span><b class="g-'+c.tone+'">'+c.pct.toFixed(1)+'%</b></div><div class="meter" role="img" aria-label="'+c.pct.toFixed(1)+' percent"><i style="width:'+c.pct+'%"></i></div></div>'+
+        '<div class="card-actions"><button type="button" data-edit="'+s.uid+'">Edit</button><button type="button" class="del" data-del="'+s.uid+'">Delete</button></div></article>';
+    }).join('');
+    $('rows').innerHTML=list.map(function(s){
+      var c=calc(s), r=rank[s.uid];
+      return '<tr'+(r===1?' class="first"':'')+'><td class="n">#'+r+'</td><td class="n">'+esc(s.roll)+'</td><td>'+esc(s.name)+'</td><td>'+esc(s.cls)+'</td><td>'+c.total+'</td><td>'+c.pct.toFixed(2)+'%</td><td class="g-'+c.tone+'"><b>'+c.grade+'</b></td><td class="g-'+(c.pass?'good':'low')+'"><b>'+(c.pass?'Pass':'Fail')+'</b></td></tr>';
+    }).join('');
+    var e=$('empty');
+    e.hidden=list.length>0;
+    e.textContent=students.length?'No student found. Check the roll number or pick another class.':'No students yet. Select “Add student” to enter the first one.';
+    $('sCount').textContent=students.length;
+    if(students.length){
+      var all=students.map(calc), avg=all.reduce(function(a,c){return a+c.pct},0)/all.length;
+      var p=all.filter(function(c){return c.pass}).length;
+      $('sAvg').textContent=avg.toFixed(1)+'%';$('sPass').textContent=p;$('sFail').textContent=all.length-p;$('sTop').textContent=ranked[0].name;
+    }else{['sAvg','sPass','sFail','sTop'].forEach(function(i){$(i).textContent='–'})}
+  }
+
+  $('subjInputs').innerHTML=SUBJ.map(function(n,i){return '<label>'+n+'<input type="number" min="0" max="100" step="1" required id="m'+i+'"></label>'}).join('');
+
+  function openForm(s){
+    editing=s?s.uid:null;
+    $('fName').value=s?s.name:'';$('fRoll').value=s?s.roll:'';$('fCls').value=s?s.cls:(cls||'');$('fMail').value=s?s.email:'';
+    SUBJ.forEach(function(_,i){$('m'+i).value=s?s.m[i]:''});
+    $('err').textContent='';$('pTitle').textContent=s?'Update student details':'New student';
+    $('saveBtn').textContent=s?'Save changes':'Save student';
+    $('panel').hidden=false;$('fName').focus();
+  }
+  function closeForm(){$('panel').hidden=true;editing=null}
+
+  $('addBtn').onclick=function(){openForm(null)};
+  $('cancelBtn').onclick=closeForm;
+  $('q').oninput=render;$('sortSel').onchange=render;
+  $('nav').onclick=function(ev){var b=ev.target.closest('[data-cls]');if(!b)return;cls=b.dataset.cls;render()};
+  document.querySelector('.tabs').onclick=function(ev){
+    var b=ev.target.closest('[data-view]');if(!b)return;view=b.dataset.view;
+    document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render();
+  };
+
+  $('form').onsubmit=function(ev){
+    ev.preventDefault();
+    var name=$('fName').value.trim(),roll=$('fRoll').value.trim(),c=$('fCls').value.trim(),mail=$('fMail').value.trim();
+    var m=SUBJ.map(function(_,i){return $('m'+i).value});
+    var er='';
+    if(!name)er='Enter the student’s full name.';
+    else if(!roll)er='Enter a roll number.';
+    else if(!c)er='Enter a class.';
+    else if(mail&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail))er='Enter a valid email address or leave it empty.';
+    else if(m.some(function(x){return x===''||isNaN(Number(x))||Number(x)<0||Number(x)>100}))er='Enter marks from 0 to 100 for every subject.';
+    else if(students.some(function(s){return s.roll.toLowerCase()===roll.toLowerCase()&&s.uid!==editing}))er='That roll number is already in use.';
+    if(er){$('err').textContent=er;return}
+    var rec={name:name,roll:roll,cls:c,email:mail,m:m.map(function(x){return Math.round(Number(x))})};
+    if(editing){students=students.map(function(s){return s.uid===editing?Object.assign({uid:s.uid},rec):s})}
+    else{rec.uid=Date.now();students.push(rec)}
+    save();closeForm();render();
+  };
+
+  $('cards').onclick=function(ev){
+    var b=ev.target.closest('button');if(!b)return;
+    if(b.dataset.edit){openForm(students.find(function(s){return s.uid==b.dataset.edit}))}
+    if(b.dataset.del){
+      var s=students.find(function(x){return x.uid==b.dataset.del});
+      if(s&&confirm('Delete '+s.name+' (roll '+s.roll+')? This can’t be undone.')){
+        students=students.filter(function(x){return x.uid!==s.uid});save();render();
+      }
+    }
+  };
+
+  students=load();render();
+})();
+</script>
+</body>
+</html>
